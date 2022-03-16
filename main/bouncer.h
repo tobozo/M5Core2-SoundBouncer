@@ -28,6 +28,11 @@
  *
 \*/
 
+#pragma once
+
+#include "sampler.h"
+
+
 struct Point
 {
   int32_t x, y;
