@@ -41,3 +41,7 @@ This project was heavily inspired by a video from [Project JDM](https://www.inst
   - [Playing 25 metronomes IRL](https://www.youtube.com/watch?v=YhMiuzyU1ag)
 
 
+## Roadmap
+
+  - Generate tones from ML_Oscillator instead of using piano sample
+  - Add controls for bounces, bullets, colors, etc
