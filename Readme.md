@@ -3,6 +3,10 @@
 [![Pendulum Wave](img/bouncer.png)](https://www.youtube.com/watch?v=UUc0wJBElTs)
 
 
+## What is it?
+
+An implementation of [Project JDM](https://www.youtube.com/channel/UCHAiieQmQBS38_AUkPf-7iQ)'s [16 metronomes](https://www.youtube.com/watch?v=MH03ZJaNe8A).
+
 This demo for M5Core2 takes advantage of DMA transfer for both the
 display and the audio while demonstrating synchronization with
 incremented visual and auditory rhythms.
