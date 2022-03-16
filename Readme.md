@@ -26,8 +26,7 @@ Credits:
   - [@m5stack](https://github.com/m5stack) for creating awesome products to play with.
 
 This project was heavily inspired by a video from [Project JDM](https://www.instagram.com/project.jdm/):
-  -
-  - https://www.youtube.com/channel/UCHAiieQmQBS38_AUkPf-7iQ
+  - [Project JDM Youtube Channel](https://www.youtube.com/channel/UCHAiieQmQBS38_AUkPf-7iQ)
   - [Playing 16 metronomes at the SAME time](https://www.youtube.com/watch?v=MH03ZJaNe8A)
   - [Playing 25 metronomes at the SAME time](https://www.youtube.com/watch?v=KuQKXHKAUw4)
   - [Playing 25 metronomes IRL](https://www.youtube.com/watch?v=YhMiuzyU1ag)
