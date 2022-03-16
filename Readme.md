@@ -8,7 +8,8 @@ display and the audio while demonstrating synchronization
 with incremented visual and auditory rhythms.
 
 The code does not simulate physics but is still valid to demonstrate
-the interation between period and pendulum length.
+the interation between period and pendulum length when starting
+multiple metronomes simultaneously.
 
 Libraries dependencies:
 
@@ -29,6 +30,6 @@ This project was heavily inspired by a video from [Project JDM](https://www.inst
   - https://www.youtube.com/channel/UCHAiieQmQBS38_AUkPf-7iQ
   - [Playing 16 metronomes at the SAME time](https://www.youtube.com/watch?v=MH03ZJaNe8A)
   - [Playing 25 metronomes at the SAME time](https://www.youtube.com/watch?v=KuQKXHKAUw4)
-  - https://www.youtube.com/watch?v=MH03ZJaNe8A
+  - [Playing 25 metronomes IRL](https://www.youtube.com/watch?v=YhMiuzyU1ag)
 
 
