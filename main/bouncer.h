@@ -183,7 +183,7 @@ struct Bouncer
   }
 
 
-  void palinchron( int8_t direction = 1 )
+  void animate( int8_t direction = 1 )
   {
     // evaluate total animation time
     unsigned long now      = millis();

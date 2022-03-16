@@ -124,8 +124,8 @@ void setup()
  };
 
   Bouncer bouncer( &cfg );
-  bouncer.palinchron(1);
-  //bouncer.palinchron(-1);
+  bouncer.animate(1);
+  //bouncer.animate(-1);
   gotoSleep();
 
 }
