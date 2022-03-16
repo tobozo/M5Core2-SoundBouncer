@@ -8,6 +8,10 @@
 An implementation of [Project JDM](https://www.youtube.com/channel/UCHAiieQmQBS38_AUkPf-7iQ)'s [tempo phasing demo using 16 metronomes](https://www.youtube.com/watch?v=MH03ZJaNe8A).
 
 
+## Hardware requirement:
+
+  - M5Core2
+
 ## Platform compatibility:
 
   - Plaformio
