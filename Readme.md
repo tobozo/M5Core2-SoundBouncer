@@ -1,4 +1,4 @@
-## M5Core2-SoundBouncer
+# M5Core2-SoundBouncer
 
 [![Pendulum Wave](img/bouncer.png)](https://www.youtube.com/watch?v=UUc0wJBElTs)
 
@@ -12,13 +12,13 @@ the interation between period and pendulum length when starting
 multiple metronomes simultaneously.
 
 
-# Platform compatibility:
+## Platform compatibility:
 
   - Plaformio
   - Arduino
 
 
-# Libraries dependencies:
+## Libraries dependencies:
 
   - https://github.com/M5Stack/M5GFX
   - https://github.com/M5Stack/M5Unified
@@ -26,7 +26,7 @@ multiple metronomes simultaneously.
   - https://github.com/tobozo/M5Stack-SD-Updater (optional)
 
 
-# Credits:
+## Credits:
 
   - [Project JDM](https://www.instagram.com/project.jdm/) for providing inspiration.
   - [@warayo](https://github.com/wararyo) for sharing the [M5Stack_Core2_Sampler](https://github.com/wararyo/M5Stack_Core2_Sampler) codebase.
