@@ -7,14 +7,6 @@
 
 An implementation of [Project JDM](https://www.youtube.com/channel/UCHAiieQmQBS38_AUkPf-7iQ)'s [tempo phasing demo using 16 metronomes](https://www.youtube.com/watch?v=MH03ZJaNe8A).
 
-This demo for M5Core2 takes advantage of DMA transfer for both the
-display and the audio while demonstrating synchronization with
-incremented visual and auditory rhythms.
-
-The code does not simulate physics but is still valid to show
-the interaction between period and pendulum length when starting
-multiple metronomes simultaneously.
-
 
 ## Platform compatibility:
 
