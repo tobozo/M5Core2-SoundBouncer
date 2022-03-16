@@ -62,6 +62,10 @@ auto &tft(M5.Display);
 // editable values
 #define BULLETS_COUNT 16 // more bullets = bigger sprite
 #define BASE_BOUNCES  20 // more bounces = longer animation
+#define BULLET_SIZE    5 // bullet radius in pixels, affects sprite size, adjusted for 320x240 with 16 bullets
+#define START_NOTE    38 // base note for the lowest bullet
+#define END_NOTE      70 // base note for the highest bullet
+
 
 #include "sampler.h" // sound effects
 #include "bouncer.h" // visual effects
@@ -108,9 +112,9 @@ void setup()
     .display       = &tft,
     .bullets_count = BULLETS_COUNT,
     .base_bounces  = BASE_BOUNCES,
-    .bulletsize    = 5,   // bullet radius in pixels, affects sprite size, adjusted for 320x240
-    .start_note    = 38,  // base note for the lowest bullet
-    .end_note      = 70,  // base note for the highest bullet
+    .bulletsize    = BULLET_SIZE,
+    .start_note    = START_NOTE,
+    .end_note      = END_NOTE,
     .note_duration = 100, // note duration (ms)
     .maskColor     = tft.color565(0xff, 0xff, 0xff), // white
     .strokeColor   = tft.color565(0x00, 0x00, 0x00), // black
