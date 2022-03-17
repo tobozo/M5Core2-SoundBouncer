@@ -46,7 +46,7 @@ struct Bullet
   int16_t bounces;
   Point origin, pos, last;
   int8_t dir, lastdir;
-  float hdist, fulldistance, amplitude;
+  float radius, hdist, fulldistance;
   unsigned long playing_since;
 };
 
@@ -94,23 +94,23 @@ struct BouncerConfig
     assert( bullets_count > 0 );
     assert( display );
     bullets = new Bullet[bullets_count];
+    // bullets will bounce inside a box tilted at -45 degrees
     anglestart        = float(-M_PI/4.0); // -45 degrees
-    strokewidth       = bulletsize/2;                  // border width for the tilted half square
+    // deduce some dynamic values (radius, distance, offset) from bullet size
+    strokewidth       = bulletsize/2;                    // border width for the tilted half square
     int bulletslength = bullets_count*bulletsize;        // distance between first and last bullet
-    pixeldistance     = bulletslength*2;               // double side length, deduced from bullets length, will be used to calculate box width
-    pixeloffset       = float(pixeldistance)/16.0*7.0; // distance between bottom side and first bullet ( arbitrary 7/16th )
-    strokelen         = pixeloffset+bulletslength;     // distance between bottom side and last bullet
+    pixeldistance     = bulletslength*2;                 // double side length, deduced from bullets length, will be used to calculate box width
+    pixeloffset       = float(pixeldistance)/16.0*7.0;   // distance between bottom side and first bullet ( arbitrary 7/16th )
+    strokelen         = pixeloffset+bulletslength;       // distance between bottom side and last bullet
     float maxypos     = pixeloffset+(bullets_count-1)*2; // highest bullet (used to calculate box height)
-    //float minypos     = sin(anglestart)*pixeloffset;   // lowest bullet (used to calculate box height)
     // box width/height is speculated from the previous values to be as small as possible
-    boxwidth          = sqrt( pixeldistance*pixeldistance + pixeldistance*pixeldistance ) + (bulletsize)*3;
-    boxheight         = bulletslength+maxypos;
-    origin            = { boxwidth/2, boxheight };     // point of origin (sprite relative) for drawing
-    float ylow        = origin.y - ( cos(anglestart)*pixeloffset ) + bulletsize; // lowest Y position when at -45 degrees
-    yoffset           = (boxheight - ylow) - bulletsize/2; // used for bullets, tilted square (both sprite and tft)
-    spriteCoords      = { display->width()/2 - boxwidth/2, display->height()/2 - (boxheight+int(yoffset))/2 };
-    baseline          = { spriteCoords.x+origin.x, spriteCoords.y+origin.y+int(yoffset) }; // tilted square corner coords (absolute to the TFT)
-    //Serial.printf("Amplitude: [%d => %d] diff=%d vs %d\n", int(minypos), int(maxypos), int(maxypos-minypos), int(bulletslength) );
+    boxwidth          = sqrt( pixeldistance*pixeldistance + pixeldistance*pixeldistance ) + (bulletsize)*3;    // largest horizontal (X) distance (sprite)
+    boxheight         = (maxypos - ( sin(anglestart)*pixeloffset ) )+ bulletsize + 2;                          // largest vertical (Y) distance (sprite)
+    origin            = { boxwidth/2, boxheight };                                                             // point of origin for drawing  (sprite)
+    float ylow        = origin.y - ( cos(anglestart)*pixeloffset ) + strokewidth + 1;                          // lowest Y bullet coord when at -45 degrees (sprite)
+    yoffset           = (boxheight - ylow) - strokewidth;                                                      // used for bullets, tilted square (both sprite and tft)
+    spriteCoords      = { display->width()/2 - boxwidth/2, display->height()/2 - (boxheight+int(yoffset))/2 }; // sprite upper left coords (TFT)
+    baseline          = { spriteCoords.x+origin.x, spriteCoords.y+origin.y+int(yoffset) };                     // tilted square corner coords (TFT)
     sprite            = new LGFX_Sprite( display );
     Serial.printf("Calculated sprite size: %d x %d\n", boxwidth, boxheight );
   }
@@ -133,10 +133,9 @@ struct Bouncer
 
     // init bullets position
     for( int i=0; i<cfg->bullets_count; i++ ) {
-      uint8_t note = map( i, 0, cfg->bullets_count-1, cfg->start_note, cfg->end_note );
-      //uint8_t note       = cfg->base_note+i;
-      uint16_t color     = getHeatMapColor( 0, cfg->bullets_count-1, i, cfg->heatMapColors, cfg->heatMapSize, 16 );
-      uint16_t radius    = map( i, 0, cfg->bullets_count-1, cfg->pixeloffset, cfg->pixeldistance );
+      uint8_t note   = map( i, 0, cfg->bullets_count-1, cfg->start_note, cfg->end_note );
+      uint16_t color = getHeatMapColor( 0, cfg->bullets_count-1, i, cfg->heatMapColors, cfg->heatMapSize, 16 );
+      float radius   = mapf( i, 0, cfg->bullets_count-1, cfg->pixeloffset, cfg->pixeldistance );
       // calculate bullet coordinates
       Point coords = {
         .x = cfg->origin.x + int(sin(cfg->anglestart)*float(radius) ),
@@ -146,7 +145,7 @@ struct Bouncer
       int16_t bounces    = cfg->base_bounces+i;
       float hdist        = (cfg->origin.x-coords.x)*2.0; // one bounce, distance in pixels
       float fulldistance = bounces*hdist;           // all bounces, distance in pixels
-      float amplitude    = cfg->pixeloffset+i*2;         // vertical bounce amplitude
+      //float amplitude    = cfg->pixeloffset+i*2;         // vertical bounce amplitude
 
       cfg->bullets[i] = {
         .note          = note,
@@ -157,9 +156,10 @@ struct Bouncer
         .last          = coords,
         .dir           = 1,
         .lastdir       = -1,
+        .radius        = radius,
         .hdist         = hdist,
         .fulldistance  = fulldistance,
-        .amplitude     = amplitude,
+        //.amplitude     = amplitude,
         .playing_since = 0
       };
       // memoize the highest distance for the animation timing
@@ -169,7 +169,7 @@ struct Bouncer
     // clear screen
     cfg->display->fillScreen( cfg->maskColor );
     // debug
-    // cfg->display->drawRect( cfg->spriteCoords.x-1, cfg->spriteCoords.y-1, cfg->boxwidth+2, cfg->boxheight+2, TFT_BLUE);
+    cfg->display->drawRect( cfg->spriteCoords.x-1, cfg->spriteCoords.y-1, cfg->boxwidth+2, cfg->boxheight+2, TFT_BLUE);
     // create sprite
     cfg->sprite->setPsram( false );  // using psram glitches the audio, let's make sure it won't re-enable itself
     cfg->sprite->setColorDepth( 8 );
@@ -246,7 +246,7 @@ struct Bouncer
     const float posinslot = fmod(posx, cfg->bullets[i].hdist);
     const float xpos      = (slotdir>0) ? posinslot : cfg->bullets[i].hdist-posinslot;
     const float angle     = mapf( posinslot, 0, cfg->bullets[i].hdist, 0, PI );
-    const float ypos      = -sin(angle)*cfg->bullets[i].amplitude;
+    const float ypos      = (-sin(angle)*cfg->bullets[i].radius)*.5;
 
     cfg->bullets[i].last.x = cfg->bullets[i].pos.x;
     cfg->bullets[i].last.y = cfg->bullets[i].pos.y;
