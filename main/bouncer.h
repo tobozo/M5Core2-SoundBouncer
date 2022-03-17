@@ -63,6 +63,7 @@ struct BouncerConfig
   const uint16_t end_note;
 
   const uint16_t note_duration;// = 100; // ms
+  const uint8_t  note_veloticy;
   const uint16_t maskColor;
   const uint16_t strokeColor;
   const uint16_t transColor;
@@ -104,7 +105,7 @@ struct BouncerConfig
     strokelen         = pixeloffset+bulletslength;       // distance between bottom side and last bullet
     float maxypos     = pixeloffset+(bullets_count-1)*2; // highest bullet (used to calculate box height)
     // box width/height is speculated from the previous values to be as small as possible
-    boxwidth          = sqrt( pixeldistance*pixeldistance + pixeldistance*pixeldistance ) + (bulletsize)*3;    // largest horizontal (X) distance (sprite)
+    boxwidth          = sqrt( pixeldistance*pixeldistance + pixeldistance*pixeldistance ) + (bulletsize)*2 + 2;    // largest horizontal (X) distance (sprite)
     boxheight         = (maxypos - ( sin(anglestart)*pixeloffset ) )+ bulletsize + 2;                          // largest vertical (Y) distance (sprite)
     origin            = { boxwidth/2, boxheight };                                                             // point of origin for drawing  (sprite)
     float ylow        = origin.y - ( cos(anglestart)*pixeloffset ) + strokewidth + 1;                          // lowest Y bullet coord when at -45 degrees (sprite)
@@ -215,13 +216,14 @@ struct Bouncer
 
     // last
     for( int i=0; i<cfg->bullets_count; i++ ) {
-      SendNoteOn(cfg->bullets[i].note, 100, 1);
+      SendNoteOn(cfg->bullets[i].note, cfg->note_veloticy/2, 1);
+      delay(2);
     }
-    resetCoords();
-    drawItems();
+    //resetCoords();
+    //drawItems();
     delay(500);
     for( int i=0; i<cfg->bullets_count; i++ ) {
-      SendNoteOff(cfg->bullets[i].note, 100, 1);
+      SendNoteOff(cfg->bullets[i].note, cfg->note_veloticy/2, 1);
     }
     delay(1000);
   }
@@ -269,12 +271,12 @@ struct Bouncer
     // trigger note on direction change
     if( cfg->bullets[i].dir != cfg->bullets[i].lastdir ) {
       cfg->bullets[i].lastdir = cfg->bullets[i].dir;
-      SendNoteOn(cfg->bullets[i].note, cfg->note_duration, 1);
+      SendNoteOn(cfg->bullets[i].note, cfg->note_veloticy, 1);
       cfg->bullets[i].playing_since = now;
     }
     // silence after note duration complete
     if( cfg->bullets[i].playing_since !=0 && cfg->bullets[i].playing_since + cfg->note_duration < now ) {
-      SendNoteOff(cfg->bullets[i].note, cfg->note_duration, 1);
+      SendNoteOff(cfg->bullets[i].note, cfg->note_veloticy, 1);
       cfg->bullets[i].playing_since = 0; // reset note timer
     }
   }

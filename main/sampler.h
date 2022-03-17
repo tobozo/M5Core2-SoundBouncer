@@ -38,8 +38,12 @@
 #pragma once
 
 #include <driver/i2s.h>
-#include "piano.h"
 
+// sox -V -r 44100 -n -b 16 -c 1 blip.wav synth 1 sin 500 vol -8dB
+// xxd -i blip.wav > blip.h
+#include "blip.h"
+
+// handle I2S migration across SDK versions
 #ifdef ESP_ARDUINO_VERSION_VAL
   #if defined ESP_ARDUINO_VERSION && ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2, 0, 0)
     #define I2C_COMM_FORMAT I2S_COMM_FORMAT_STAND_I2S
@@ -66,6 +70,7 @@
 
 #define SAMPLE_BUFFER_SIZE 64
 #define SAMPLE_RATE 44100
+
 constexpr uint32_t AUDIO_LOOP_INTERVAL = (uint32_t)(SAMPLE_BUFFER_SIZE * 1000000 / SAMPLE_RATE);// micro seconds
 
 bool InitI2SSpeakOrMic(int mode)
@@ -107,9 +112,8 @@ bool InitI2SSpeakOrMic(int mode)
 
 
 
-
-
 #define MAX_SOUND 12 // 最大同時発音数
+
 
 static float globalVolume = 0.5f;
 static uint32_t audioProcessTime = 0; // プロファイリング用 一回のオーディオ処理にかかる時間
@@ -159,15 +163,17 @@ struct SamplePlayer
 };
 
 
-static Sample piano =
+#define PCM_HEADER_SIZE 44 // size of the PCM header in wav files, data starts just after that
+
+static Sample blipSample =
 {
-  .sample      = (int16_t*)piano_sample,
-  .length      = piano_sample_len,
-  .root        = 60,
-  .loopStart   = 24120,
-  .loopEnd     = 24288,
+  .sample      = (int16_t*)&blip[PCM_HEADER_SIZE],
+  .length      = (blip_len-PCM_HEADER_SIZE)/2,
+  .root        = 50,
+  .loopStart   = 0,
+  .loopEnd     = (blip_len-PCM_HEADER_SIZE)/2 - 1,
   .adsrEnabled = true,
-  .attack      = 0.5f,
+  .attack      = 0.75f,
   .decay       = 0.9888f,
   .sustain     = 0.1f,
   .release     = 0.948885f
@@ -189,20 +195,17 @@ void UpdateAdsr(SamplePlayer *player)
   Sample *sample = player->sample;
   if(player->released) player->adsrState = release;
 
-  switch (player->adsrState)
-  {
+  switch (player->adsrState) {
   case attack:
     player->adsrGain += sample->attack;
-    if (player->adsrGain >= 1.0f)
-    {
+    if (player->adsrGain >= 1.0f) {
       player->adsrGain = 1.0f;
       player->adsrState = decay;
     }
     break;
   case decay:
     player->adsrGain = (player->adsrGain - sample->sustain) * sample->decay + sample->sustain;
-    if ((player->adsrGain - sample->sustain) < 0.01f)
-    {
+    if ((player->adsrGain - sample->sustain) < 0.01f) {
       player->adsrState = sustain;
       player->adsrGain = sample->sustain;
     }
@@ -211,8 +214,7 @@ void UpdateAdsr(SamplePlayer *player)
     break;
   case release:
     player->adsrGain *= sample->release;
-    if (player->adsrGain < 0.01f)
-    {
+    if (player->adsrGain < 0.01f) {
       player->adsrGain = 0;
       player->playing = false;
     }
@@ -225,14 +227,14 @@ void SendNoteOn(uint8_t noteNo, uint8_t velocity, uint8_t channnel) {
   uint8_t oldestPlayerId = 0;
   for(uint8_t i = 0;i < MAX_SOUND;i++) {
     if(players[i].playing == false) {
-      players[i] = SamplePlayer(&piano, noteNo, velocity / 127.0f);
+      players[i] = SamplePlayer(&blipSample, noteNo, velocity / 127.0f);
       return;
     } else {
       if(players[i].createdAt < players[oldestPlayerId].createdAt) oldestPlayerId = i;
     }
   }
   // 全てのPlayerが再生中だった時には、最も昔に発音されたPlayerを停止する
-  players[oldestPlayerId] = SamplePlayer(&piano, noteNo, velocity / 127.0f);
+  players[oldestPlayerId] = SamplePlayer(&blipSample, noteNo, velocity / 127.0f);
 }
 
 
@@ -243,6 +245,7 @@ void SendNoteOff(uint8_t noteNo,  uint8_t velocity, uint8_t channnel) {
     }
   }
 }
+
 
 void AudioLoop(void *pvParameters)
 {
@@ -292,8 +295,6 @@ void AudioLoop(void *pvParameters)
         }
       }
     }
-
-    //Reverb_Process(data, SAMPLE_BUFFER_SIZE);
 
     int16_t dataI[SAMPLE_BUFFER_SIZE];
     const float multiplier = globalVolume * 32767.0f; // 32767 = int16_tがとりうる最大値

@@ -41,7 +41,23 @@ This project was heavily inspired by a video from [Project JDM](https://www.inst
   - [Playing 25 metronomes IRL](https://www.youtube.com/watch?v=YhMiuzyU1ag)
 
 
+## Custom tones
+
+The current tone was generated with [SoX](http://sox.sourceforge.net):
+
+    sox -V -r 44100 -n -b 16 -c 1 blip.wav synth 1 sin 500 vol -8dB
+
+The sound data was produced from the wav file using `xxd` utility:
+
+    xxd -i blip.wav > blip.h
+
+It is later adressed as a 16bit signed array with an offset of 44 bytes:
+
+    .sample      = (int16_t*)&blip[44],
+    .length      = (blip_len-PCM_HEADER_SIZE)/2,
+
+
 ## Roadmap
 
-  - Generate tones from ML_Oscillator instead of using piano sample
+  - ~~Generate tones from ML_Oscillator instead of using piano sample~~
   - Add controls for bounces, bullets, colors, etc

@@ -115,7 +115,8 @@ void setup()
     .bulletsize    = BULLET_SIZE,
     .start_note    = START_NOTE,
     .end_note      = END_NOTE,
-    .note_duration = 100, // note duration (ms)
+    .note_duration = 100, // milliseconds
+    .note_veloticy = 75, // byte
     .maskColor     = tft.color565(0xff, 0xff, 0xff), // white
     .strokeColor   = tft.color565(0x00, 0x00, 0x00), // black
     .transColor    = tft.color565(0x00, 0x00, 0xff), // blue
