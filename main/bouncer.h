@@ -169,7 +169,7 @@ struct Bouncer
     // clear screen
     cfg->display->fillScreen( cfg->maskColor );
     // debug
-    cfg->display->drawRect( cfg->spriteCoords.x-1, cfg->spriteCoords.y-1, cfg->boxwidth+2, cfg->boxheight+2, TFT_BLUE);
+    // cfg->display->drawRect( cfg->spriteCoords.x-1, cfg->spriteCoords.y-1, cfg->boxwidth+2, cfg->boxheight+2, TFT_BLUE);
     // create sprite
     cfg->sprite->setPsram( false );  // using psram glitches the audio, let's make sure it won't re-enable itself
     cfg->sprite->setColorDepth( 8 );
