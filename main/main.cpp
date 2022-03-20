@@ -35,7 +35,6 @@
  *
  *   - https://github.com/M5Stack/M5GFX
  *   - https://github.com/M5Stack/M5Unified
- *   - https://github.com/marcel-licence/ML_SynthTools
  *   - https://github.com/tobozo/M5Stack-SD-Updater (optional)
  *
  * Credits:
@@ -46,25 +45,36 @@
 
 #include <SD.h>
 #include <M5Unified.h>
-auto &tft(M5.Display);
+//#include <ESP32-Chimera-Core.h> // only for M5Core2 (uses I2S instead of Speaker)
+
+#if defined __M5UNIFIED_HPP__
+  auto &tft(M5.Display);
+#elif defined _CHIMERA_CORE_
+  auto &tft(M5.Lcd);
+#else
+  #error "Please use either M5Unified or ESP32-Chimera-Core"
+#endif
+
+#define USE_SDUPDATER
 
 #if defined USE_SDUPDATER
-  #define SDU_APP_NAME   "SoundBouncer" // app title for the sd-updater lobby screen
-  #define SDU_APP_PATH   "/SoundBouncer.bin"     // app binary file name on the SD Card (also displayed on the sd-updater lobby screen)
+  #define TFCARD_CS_PIN 4
+  #define SDU_APP_NAME   "SoundBouncer"      // app title for the sd-updater lobby screen
+  #define SDU_APP_PATH   "/SoundBouncer.bin" // app binary file name on the SD Card (also displayed on the sd-updater lobby screen)
   #define SDU_APP_AUTHOR "@tobozo"           // app binary author name for the sd-updater lobby screen
   #include <M5StackUpdater.h>
 #endif
 
-#if !defined ARDUINO_M5STACK_Core2
-  #error "This demo is for M5Stack Core2 only"
-#endif
+//#if !defined ARDUINO_M5STACK_Core2
+//  #error "This demo is for M5Stack Core2 only"
+//#endif
 
 // editable values
 #define BULLETS_COUNT 16 // more bullets = bigger sprite
 #define BASE_BOUNCES  20 // more bounces = longer animation
 #define BULLET_SIZE    5 // bullet radius in pixels, affects sprite size, adjusted for 320x240 with 16 bullets
 #define START_NOTE    38 // base note for the lowest bullet
-#define END_NOTE      70 // base note for the highest bullet
+#define END_NOTE      66 // base note for the highest bullet
 
 
 #include "sampler.h" // sound effects
@@ -89,25 +99,27 @@ void gotoSleep()
 
 void setup()
 {
-  M5.begin();
+
+  auto cfg = M5.config();
+  M5.begin(cfg);
+
+  initSound(); // Note: I2S MUST be started before SD, or weird things happen
 
   #if defined USE_SDUPDATER
     checkSDUpdater(
       SD,           // filesystem (default=SD)
       MENU_BIN,     // path to binary (default=/menu.bin, empty string=rollback only)
       1000,         // wait delay, (default=0, will be forced to 2000 upon ESP.restart() )
-      5             // m5stack=4, m5core2=5
+      GPIO_NUM_4    // GPIO_NUM_4 == TFCARD CS PIN
     );
   #endif
 
-  InitI2SSpeakOrMic(MODE_SPK);
-  xTaskCreateUniversal( AudioLoop, "audioLoop", 8192, NULL, 1, NULL, 0);
-  disableCore0WDT();
+  using namespace BouncerUI;
 
   // gradient color palette for bullets, green => yellow => orange => red
   RGBColor heatMapColors[] = { {0, 0xff, 0}, {0xff, 0xff, 0}, {0xff, 0x80, 0}, {0xff, 0, 0} };
 
-  BouncerConfig cfg =
+  BouncerConfig bouncerCfg =
   {
     .display       = &tft,
     .bullets_count = BULLETS_COUNT,
@@ -115,8 +127,8 @@ void setup()
     .bulletsize    = BULLET_SIZE,
     .start_note    = START_NOTE,
     .end_note      = END_NOTE,
-    .note_duration = 100, // milliseconds
-    .note_veloticy = 75, // byte
+    .note_duration = 200, // milliseconds
+    .note_veloticy = 64, // byte
     .maskColor     = tft.color565(0xff, 0xff, 0xff), // white
     .strokeColor   = tft.color565(0x00, 0x00, 0x00), // black
     .transColor    = tft.color565(0x00, 0x00, 0xff), // blue
@@ -124,7 +136,7 @@ void setup()
     .heatMapSize   = sizeof(heatMapColors)/sizeof(RGBColor),
  };
 
-  Bouncer bouncer( &cfg );
+  Bouncer bouncer( &bouncerCfg );
   bouncer.animate(1);
   //bouncer.animate(-1);
   gotoSleep();

@@ -51,10 +51,10 @@ The sound data was produced from the wav file using `xxd` utility:
 
     xxd -i blip.wav > blip.h
 
-It is later adressed as a 16bit signed array with an offset of 44 bytes:
+The data is adressed as a 16bit signed array, with an offset of 44 bytes (PCM wav header size):
 
     .sample      = (int16_t*)&blip[44],
-    .length      = (blip_len-PCM_HEADER_SIZE)/2,
+    .length      = (blip_len-44)/2,
 
 
 ## Roadmap
